@@ -27,7 +27,7 @@ Implementation Notes
 """
 import time
 from collections import namedtuple
-# from adafruit_bus_device.i2c_device import I2CDevice
+# from adafruit_bus_device.I2C import I2CDevice
 from machine import Pin, I2C
 
 try:
@@ -69,17 +69,17 @@ class Nunchuk:
         # _ = i2c.scan()
         # i2c.unlock()
         # ------------------------------------------------------------
-        # self.i2c_device = I2CDevice(i2c, address)
-        self.i2c_device = i2c
+        # self.I2C = I2CDevice(i2c, address)
+        self.I2C = i2c
         self._i2c_read_delay = i2c_read_delay
-        self._address = address
+        self._device_address = address
         time.sleep(_I2C_INIT_DELAY)
-        # with self.i2c_device as i2c_dev:
+        # with self.I2C as i2c_dev:
             # turn off encrypted data
             # http://wiibrew.org/wiki/Wiimote/Extension_Controllers
-        self.i2c_device.writeto(address,b"\xF0\x55")
+        self.I2C.writeto(address,b"\xF0\x55")
         time.sleep(_I2C_INIT_DELAY)
-        self.i2c_device.writeto(address,b"\xFB\x00")
+        self.I2C.writeto(address,b"\xFB\x00")
 
     @property
     def values(self) -> _Values:
@@ -131,21 +131,7 @@ class Nunchuk:
         return self._read_register(b"\x00")
 
     def _read_register(self, address) -> bytearray:
-        # Write the register address to the device
-        self.i2c_device.writeto(self._address, address)
-
-        # Wait for the required delay (e.g., 200 microseconds)
+        self.I2C.writeto(self._device_address, address)
         time.sleep(self._i2c_read_delay)
-
-        # Read the data from the device into the buffer
-        self.i2c_device.readfrom_into(self._address, self.buffer)
-
+        self.I2C.readfrom_into(self._device_address, self.buffer)
         return self.buffer
-    # def _read_register(self, address) -> bytearray:
-    #     # with self.i2c_device as i2c:
-    #     self.i2c_device.writeto(self._address, address)
-    #     # i2c.write(address)
-    #     time.sleep(self._i2c_read_delay)  # at least 200us
-    #     return self.i2c_device.readfrom(self._address, 4)
-    #     #return self.buffer
-    #

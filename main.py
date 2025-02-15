@@ -189,18 +189,34 @@ level_color = display.create_pen(255, 0, 0)
 bricks = load_level(level, display, level_color)
 touch = presto.touch
 i2c = I2C(0, scl=Pin(41), sda=Pin(40), freq=400_000)
-# i2c.scan()
-# i2c.write(b"\xF0\x55")
-# sleep(20)
-# i2c.write(b"\xFB\x00")
-# i2c.stop()
+# x 127 is middle, y 128
 nc = adafruit_nunchuk.Nunchuk(i2c)
+prev_paddle_vect = 0
 while True:
     # touch.poll()
     x, y = nc.joystick
-    ax, ay, az = nc.acceleration
-    print("joystick = {},{}".format(x, y))
-    print("accceleration ax={}, ay={}, az={}".format(ax, ay, az))
+    move_amount = 0
+    # if x > 127:
+    #     prev_paddle_vect = 1
+    # elif x < 127:
+    #     prev_paddle_vect = -1
+
+    paddle_vect = 0
+    if x < 127:
+        paddle_vect = -1
+    elif x > 127:
+        paddle_vect = 1
+    if paddle_vect != prev_paddle_vect:
+        paddle_vect *= 3
+    else:
+        paddle_vect *= 5
+    PADDLE.h_position(PADDLE.x + paddle_vect)
+    prev_paddle_vect = paddle_vect
+
+
+    # ax, ay, az = nc.acceleration
+    # print("joystick = {},{}".format(x, y))
+    # print("accceleration ax={}, ay={}, az={}".format(ax, ay, az))
 
     count += 1
     display.set_pen(WHITE)
@@ -209,7 +225,6 @@ while True:
     for brick in bricks:
         brick.draw()
 
-    PADDLE.h_position(count)
     PADDLE.draw()
 
     # Finally we update the screen with our changes :)
