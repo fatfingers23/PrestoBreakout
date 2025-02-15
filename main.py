@@ -1,7 +1,8 @@
 import random
 from time import sleep
-
+from machine import Pin, I2C
 from presto import Presto
+import adafruit_nunchuk
 
 class Paddle(object):
     """Paddle."""
@@ -156,7 +157,7 @@ def load_level(level, display, level_color) :
     level_bricks = []
     # for row in range(12, 20 + 6 * level , 6):
     for row in range(30, 100 + 10 * level, 10):  # Start at row 30, increment by 10
-        print(row)
+        # print(row)
         #1st affects how many?
         # Full width?
         # 3rd is spacing?
@@ -165,7 +166,7 @@ def load_level(level, display, level_color) :
         for col in range(20, 220, 25):  # Start at column 20, increment by 25
         # for col in range(0, 220, 22 ):
             # display..
-            print(f"Col: {col}")
+            # print(f"Col: {col}")
             level_bricks.append(Brick(col, row, level_color, display))
 
     return level_bricks
@@ -187,9 +188,19 @@ level = 1
 level_color = display.create_pen(255, 0, 0)
 bricks = load_level(level, display, level_color)
 touch = presto.touch
-
+i2c = I2C(0, scl=Pin(41), sda=Pin(40), freq=400_000)
+# i2c.scan()
+# i2c.write(b"\xF0\x55")
+# sleep(20)
+# i2c.write(b"\xFB\x00")
+# i2c.stop()
+nc = adafruit_nunchuk.Nunchuk(i2c)
 while True:
     # touch.poll()
+    x, y = nc.joystick
+    ax, ay, az = nc.acceleration
+    print("joystick = {},{}".format(x, y))
+    print("accceleration ax={}, ay={}, az={}".format(ax, ay, az))
 
     count += 1
     display.set_pen(WHITE)
