@@ -75,8 +75,10 @@ class Ball(object):
 
         far_right_wall = 240
         # Bounces off walls
+        #Top bounce?
         if self.y < 30:
-            self.y = 10
+            print("Hit the top")
+            self.y = 32
             self.y_speed = -self.y_speed
             bounced = True
         if self.x + self.width >= far_right_wall:
@@ -314,8 +316,8 @@ class Score(object):
     def game_over(self):
         """Display game_over."""
         self.display.set_pen(self.color)
-        self.display.text("GAME OVER", 90, 120, scale=2)
-        self.display.text("Press C to start", 0, 20)
+        self.display.text("GAME OVER", 20, 180, scale=2)
+        self.display.text("Press C to start", 0, 200)
         # self.display.text('GAME OVER', (self.display.width // 2) - 30,
         #                        int(self.display.height / 1.5), 1)
 
@@ -369,6 +371,8 @@ i2c = I2C(0, scl=Pin(41), sda=Pin(40), freq=400_000)
 nc = adafruit_nunchuk.Nunchuk(i2c)
 prev_paddle_vect = 0
 MAX_LEVEL = const(5)
+BACKLIGHT_BRIGHTNESS = .50
+
 
 demoOn = False
 exitGame = False
@@ -394,6 +398,7 @@ while not exitGame:
         display.text("Press C to start", 0, 20)
         if nc.buttons.C:
             break
+        presto.set_backlight(BACKLIGHT_BRIGHTNESS)
         presto.update()
 
     if not exitGame:
@@ -418,7 +423,7 @@ while not exitGame:
             print(i)
             lives.append(Life(i, display))
         prev_paddle_vect = 0
-
+        presto.set_backlight(BACKLIGHT_BRIGHTNESS)
         presto.update()
         # try:
         while not gameOver:
@@ -495,7 +500,7 @@ while not exitGame:
                             while True:
                                 if nc.buttons.C:
                                     break
-
+                                presto.update()
                             # g.playTone('g4', 500)
                             # g.playTone('c5', 200)
                             # g.playTone('f4', 500)
@@ -521,13 +526,14 @@ while not exitGame:
                     paddle_width -= 2
                     if level > MAX_LEVEL:
                         level = 1
-                    bricks = load_level(level, g.display)
+                    bricks = load_level(level, display, display.create_pen(level + 25, level + 25, level + 25))
                     balls.append(Ball(59, 58, -2, -1, display, frozen=True))
-
+                presto.set_backlight(BACKLIGHT_BRIGHTNESS)
                 presto.update()
 
 
         # for ball in balls:
+
 
 
 
