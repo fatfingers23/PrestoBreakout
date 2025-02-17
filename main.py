@@ -33,7 +33,6 @@ class Ball(object):
         self.created = ticks_ms()
         self.color = display.create_pen(0, 0, 0)
         self.background_color = display.create_pen(255, 255, 255)
-
     def clear(self):
         """Clear ball."""
         self.display.set_pen(self.background_color)
@@ -371,12 +370,12 @@ i2c = I2C(0, scl=Pin(41), sda=Pin(40), freq=400_000)
 nc = adafruit_nunchuk.Nunchuk(i2c)
 prev_paddle_vect = 0
 MAX_LEVEL = const(5)
-BACKLIGHT_BRIGHTNESS = .50
-
+BACKLIGHT_BRIGHTNESS = .25
 
 demoOn = False
 exitGame = False
 while not exitGame:
+
     paddle_width = 40
     frameRate = 30
     # gc.collect()
