@@ -1,5 +1,6 @@
-import random
-from time import sleep
+# All the game logic and classes are ported over from the breakout.py found in the cheungbx/gameESP-micropython github repo
+# https://github.com/cheungbx/gameESP-micropython/blob/master/breakout.py
+
 from machine import Pin, I2C
 from micropython import const
 from presto import Presto
@@ -76,7 +77,7 @@ class Ball(object):
         # Bounces off walls
         #Top bounce?
         if self.y < 30:
-            print("Hit the top")
+            # Bounce on top
             self.y = 32
             self.y_speed = -self.y_speed
             bounced = True
@@ -127,11 +128,13 @@ class Paddle(object):
         self.paddle_color = display.create_pen(0, 0, 0)
         self.background_color = display.create_pen(255, 255, 255)
         self.display_width = 240
+        self.clear()
 
     def clear(self):
         """Clear paddle."""
         self.display.set_pen(WHITE)
-        display.rectangle(self.x, self.y, self.width, self.height)
+        # Clears the whole bottom of the screen since the paddle can change in size
+        display.rectangle(0, self.y, 240, self.height)
 
     def draw(self):
         """Draw paddle."""
@@ -170,7 +173,7 @@ class Brick(object):
         Args:
             x, y (int):  X,Y coordinates.
             color (string):  Blue, Green, Pink, Red or Yellow.
-            display (SSD1351): OLED g.display.
+            display: presto display.
             width (Optional int): Blick width
             height (Optional int): Blick height
         """
@@ -252,12 +255,12 @@ class Brick(object):
 class Life(object):
     """Life."""
 
-    def __init__(self, index, display, width=4, height=6):
+    def __init__(self, index, display, width=4, height=8):
         """Initialize life.
 
         Args:
             index (int): Life number (1-based).
-            display (SSD1351): OLED g.display.
+            display: presto display.
             width (Optional int): Life width
             height (Optional int): Life height
         """
@@ -275,13 +278,11 @@ class Life(object):
         """Clear brick."""
         self.display.set_pen(self.background_color)
         display.rectangle(self.x, self.y, self.width, self.height)
-        # self.display.fill_rect(self.x, self.y, self.width, self.height, 0)
 
     def draw(self):
         """Draw brick."""
         self.display.set_pen(self.color)
         display.rectangle(self.x, self.y, self.width, self.height)
-        # self.display.rect(self.x, self.y, self.width, self.height, 1)
 
 class Score(object):
     """Score."""
@@ -290,12 +291,11 @@ class Score(object):
         """Initialize score.
 
         Args:
-            display (SSD1306): OLED g.display.
+            display: presto display.
         """
         margin = 40
         self.display = display
-        display.text("Score:", 180, 8, scale=0)
-        # self.display.text('S:', margin, 0, 1)
+        display.text("Score:", 160, 8, scale=2)
         self.x = 180 + margin
         self.y = 8
         self.value = 0
@@ -306,19 +306,15 @@ class Score(object):
     def draw(self):
         """Draw score value."""
         self.display.set_pen(self.background_color)
-        display.rectangle(self.x, self.y, 20, 10)
+        display.rectangle(self.x, self.y, 25, 20)
         self.display.set_pen(self.color)
-        display.text(str(self.value), self.x, self.y, scale=0)
-
-        # self.display.text( str(self.value), self.x, self.y,1)
+        display.text(str(self.value), self.x, self.y, scale=2)
 
     def game_over(self):
         """Display game_over."""
         self.display.set_pen(self.color)
-        self.display.text("GAME OVER", 20, 180, scale=2)
-        self.display.text("Press C to start", 0, 200)
-        # self.display.text('GAME OVER', (self.display.width // 2) - 30,
-        #                        int(self.display.height / 1.5), 1)
+        self.display.text("GAME OVER", 20, 170, scale=2)
+        self.display.text("Press C to start", 20, 190)
 
     def increment(self, points):
         """Increase score by specified points."""
@@ -326,24 +322,16 @@ class Score(object):
         self.draw()
 
 def load_level(level, display, level_color):
-    global frameRate
-    # if demo :
-    #   frameRate = 60 + level * 10
-    # else :
-    frameRate = 25 + level * 5
     level_bricks = []
-    # for row in range(12, 20 + 6 * level , 6):
-    for row in range(30, 100 + 10 * level, 10):  # Start at row 30, increment by 10
-        # print(row)
-        # 1st affects how many?
-        # Full width?
-        # 3rd is spacing?
-        # idk = range(4, 222, 22)
-        # print(idk)
+    # Sets the pen to white to clear previous level
+    display.set_pen(display.create_pen(255, 255, 255))
+    display.rectangle(40, 8, 80, 20)
+    # Sets the pen to black to write level
+    display.set_pen(display.create_pen(0, 0, 0))
+    display.text(f"Level: {level}", 40, 8, scale=2)
+
+    for row in range(30, 50 + 10 * level, 10):  # Start at row 30, increment by 10
         for col in range(20, 220, 25):  # Start at column 20, increment by 25
-            # for col in range(0, 220, 22 ):
-            # display..
-            # print(f"Col: {col}")
             level_bricks.append(Brick(col, row, level_color, display))
 
     return level_bricks
@@ -352,49 +340,40 @@ def load_level(level, display, level_color):
 # Setup for the Presto display
 presto = Presto()
 display = presto.display
+display.set_layer(0)
+display.set_font("bitmap8")
 WIDTH, HEIGHT = display.get_bounds()
 
 WHITE = display.create_pen(255, 255, 255)
 BLACK = display.create_pen(0, 0, 0)
 
-# PADDLE = Paddle(display, 40, 10)
-
 count = 0
 level = 1
 # level_color = display.create_pen(random.randint(0, 200), random.randint(0, 200), random.randint(0, 200))
 # level_color = display.create_pen(255, 0, 0)
-# bricks = load_level(level, display, level_color)
-touch = presto.touch
+
 i2c = I2C(0, scl=Pin(41), sda=Pin(40), freq=400_000)
-# x 127 is middle, y 128
 nc = adafruit_nunchuk.Nunchuk(i2c)
 prev_paddle_vect = 0
 MAX_LEVEL = const(5)
-BACKLIGHT_BRIGHTNESS = .25
+BACKLIGHT_BRIGHTNESS = .50
 
-demoOn = False
 exitGame = False
 while not exitGame:
 
-    paddle_width = 40
+    paddle_width = 70
     frameRate = 30
-    # gc.collect()
-    # print (gc.mem_free())
-
+    gameWon = False
     gameOver = False
     usePaddle = False
-    if demoOn:
-        demo = True
-    else:
-        demo = False
+
 
     while True:
         display.set_pen(WHITE)
-        display.set_layer(0)
         display.clear()
         display.set_pen(BLACK)
-        display.text("BREAKOUT", 0, 0, scale=2)
-        display.text("Press C to start", 0, 20)
+        display.text("BREAKOUT", 10, 10, scale=2)
+        display.text("Press C to start", 10, 30)
         if nc.buttons.C:
             break
         presto.set_backlight(BACKLIGHT_BRIGHTNESS)
@@ -402,7 +381,6 @@ while not exitGame:
 
     if not exitGame:
         display.set_pen(WHITE)
-        display.set_layer(0)
         display.clear()
         level = 1
         bricks = load_level(level, display, display.create_pen(level + 25, level + 25, level + 25))
@@ -419,19 +397,13 @@ while not exitGame:
         # Initialize lives
         lives = []
         for i in range(0, 3):
-            print(i)
             lives.append(Life(i, display))
         prev_paddle_vect = 0
         presto.set_backlight(BACKLIGHT_BRIGHTNESS)
         presto.update()
-        # try:
+
         while not gameOver:
             x, y = nc.joystick
-            move_amount = 0
-            # if x > 127:
-            #     prev_paddle_vect = 1
-            # elif x < 127:
-            #     prev_paddle_vect = -1
 
             paddle_vect = 0
             if x < 127:
@@ -454,6 +426,7 @@ while not exitGame:
                 ball.set_position(paddle.x, paddle.y,paddle.x2, paddle.center)
                 # move ball and check if bounced off walls and paddle
                 # if ball.set_position(paddle.x, paddle.y, paddle.x2, paddle.center):
+                    #TODO add a buzzer beep here
                     # g.playSound(900, 10)
                 # Check for collision with bricks if not frozen
                 if not ball.frozen:
@@ -500,6 +473,7 @@ while not exitGame:
                                 if nc.buttons.C:
                                     break
                                 presto.update()
+                            # TODO add a buzzer beep here for lose
                             # g.playTone('g4', 500)
                             # g.playTone('c5', 200)
                             # g.playTone('f4', 500)
@@ -515,6 +489,9 @@ while not exitGame:
                     ball.draw()
                     # Update score if changed
                 if score_points:
+                    #TODO uncomment next line to test going to the next level by scoring once
+
+                    # bricks.clear()
                     score.increment(score_points)
                 # Check for level completion
                 if not bricks:
@@ -522,17 +499,19 @@ while not exitGame:
                         ball.clear()
                     balls.clear()
                     level += 1
+                    #Make the paddle smaller with each level up
+                    paddle = Paddle(display, (paddle_width - (level * 5)), 10)
                     paddle_width -= 2
                     if level > MAX_LEVEL:
                         level = 1
+                        score.game_over()
+                        display.text("You've won!", 20, 150)
+                        presto.update()
+                        while True:
+                            if nc.buttons.C:
+                                break
+                        gameOver = True
                     bricks = load_level(level, display, display.create_pen(level + 25, level + 25, level + 25))
                     balls.append(Ball(59, 58, -2, -1, display, frozen=True))
                 presto.set_backlight(BACKLIGHT_BRIGHTNESS)
                 presto.update()
-
-
-        # for ball in balls:
-
-
-
-

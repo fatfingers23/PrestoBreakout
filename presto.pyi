@@ -1,4 +1,4 @@
-import asyncio
+# Python stub to help IDE's with autocomplete
 from collections import namedtuple
 from typing import Any, Optional, Tuple
 from picographics import PicoGraphics

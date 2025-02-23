@@ -1,3 +1,8 @@
+# This is a quick port of the adafruit library for circuit python
+# All credit goes to the library maintainers and creators. I just changed the i2c write/read methods to work with Micropython
+# https://github.com/adafruit/Adafruit_CircuitPython_Nunchuk
+
+
 # SPDX-FileCopyrightText: 2019 Carter Nelson for Adafruit Industries
 #
 # SPDX-License-Identifier: MIT

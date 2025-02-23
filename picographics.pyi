@@ -1,6 +1,5 @@
+# Python stub to help IDE's with autocomplete
 from typing import Any, Tuple, Optional, List, Callable
-from machine import Pin
-
 class PicoGraphics:
     # Enums
     class Display:
