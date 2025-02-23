@@ -295,12 +295,13 @@ class Score(object):
         """
         margin = 40
         self.display = display
+        self.background_color = display.create_pen(255, 255, 255)
+        self.color = display.create_pen(0, 0, 0)
+        display.set_pen(self.color)
         display.text("Score:", 160, 8, scale=2)
         self.x = 180 + margin
         self.y = 8
         self.value = 0
-        self.background_color = display.create_pen(255, 255, 255)
-        self.color = display.create_pen(0, 0, 0)
         self.draw()
 
     def draw(self):
